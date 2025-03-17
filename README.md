@@ -15,8 +15,7 @@
 More about me...? => 
 [LinkedIn to my profile](https://www.linkedin.com/in/jhan436/)
 
-![](https://c.tenor.com/_15yYkqVX8EAAAAd/tenor.gif)
-
+![I'm a cat person!](https://c.tenor.com/YFRLfFiobMAAAAAd/tenor.gif)
 
 A meme that captures how I currently feel about my university studies is
 
