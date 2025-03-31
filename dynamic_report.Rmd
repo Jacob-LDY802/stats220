@@ -1,0 +1,161 @@
+---
+title: My dynamic report
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+
+```
+
+```{css}
+H1{
+      background-color: #eff776;
+      font-family: "Courier New", Monospace;
+      border-style: outset;
+      border-left: 6px solid green;
+      border-right: 6px solid green;
+      text-align: center;
+      
+      }
+H2{
+      background-color: #bbdbfc;
+      border-style: ridge;
+      border-radius: 5px;
+      text-align: center;
+      
+}
+Body{
+      background-color: #f3ffde
+}
+```
+
+# How was my stock trading behaviour and results?
+
+## This data tracks my behavior while stock trading and the corresponding results.
+
+I evaluate my decisions based on the price difference from the past month, **my instincts**, and my **actions**.
+
+1. If a trade yields a profit or avoids a loss, it is considered a ***good*** decision.
+
+2. If it results in a loss, it is deemed a ***bad*** decision.
+
+```{r}
+library(tidyverse)
+
+# load published csv
+logged_data.df <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQin0KyMRsOGY2eNeYPsjHgKjvdeYy4_Ebi7cqBP0UjRsgyagoj1sAI3Ncssn6JyJ2UIkjBMoAY3dKv/pub?output=csv")
+
+
+# new data frame with clean variables
+latest_data.df <- logged_data.df %>% rename(price = 2,
+                                            differ_from_month = 3,
+                                            think = 4,
+                                            action = 5,
+                                            result = 6)
+
+# plot, price bar chart
+latest_data.df %>%
+  ggplot() +
+  geom_bar(aes(x = price)) + 
+  labs(title = "The price range while trading",
+       x = "Price")
+
+# summary values
+price_min <- min(latest_data.df$price)
+price_ave <- round(mean(latest_data.df$price),0)
+price_max <- max(latest_data.df$price)
+paste0("The average price was $", price_ave, 
+       ", while minimum $",price_min, 
+       " and maximum $",price_max)
+
+
+
+```
+## Result analysis based on my actions
+
+```{r}
+
+# plot, results from actions
+latest_data.df %>%
+  ggplot() +
+  geom_bar(aes(x = result, fill = action)) + 
+  labs(title = "Less actions, better decisions",
+    subtitle = "Results from actions",
+       x = "Result")
+
+# and summary of the plot
+num_good_choices <- nrow(latest_data.df[latest_data.df$result == "It was a good choice!", ])
+num_bad_choices <- nrow(latest_data.df[latest_data.df$result == "I shouldn't have done this...", ])
+paste0("How was my trading so far? I did ",
+       num_good_choices,
+       " good choice and ", 
+       num_bad_choices,
+       " bad choices.")
+
+```
+
+## What about the most recent 5 decisions?
+
+
+```{r}
+
+# The most recent 5 data
+most_recent <- latest_data.df %>%
+  select(think, action, result) %>%
+  slice((nrow(latest_data.df)-4):(nrow(latest_data.df)))
+# plot, the most recent 5 performance
+most_recent %>%
+  ggplot() +
+  geom_bar(aes(x= result))
+
+# and summary of the plot
+num_good_choices_recent <- nrow(most_recent[most_recent$result == "It was a good choice!", ])
+num_bad_choices_recent <- nrow(most_recent[most_recent$result == "I shouldn't have done this...", ])
+paste0("How was my most recent 5 tradings? I did ",
+       num_good_choices_recent,
+       " good choice and ", 
+       num_bad_choices_recent,
+       " bad choices.")
+
+```
+
+## Okay, then what motivated my actions?
+
+```{r}
+
+# plot, action behavior depends on the difference from previous month
+latest_data.df %>%
+  ggplot() +
+  geom_bar(aes(x = action, fill = differ_from_month)) +
+  labs(title = "My action behaviour based on price difference",
+    subtitle = "Action depends on the difference from previous month",
+       x = "My Action")
+
+# Filter for good choices
+good_choices <- latest_data.df %>%
+  filter(result == "It was a good choice!")
+
+# Calculate proportions of differ_from_month
+proportions <- good_choices %>%
+  count(differ_from_month) %>%
+  mutate(proportion = n / sum(n)) %>%
+  arrange(desc(proportion))
+
+# and summary
+paste("The most factors that made me move is, ",
+       paste(proportions$differ_from_month,
+             ": ",
+             round(proportions$proportion * 100, 0),
+             "% ",
+             collapse = "/"
+             )
+             
+        )
+
+
+```
+
+
+
+![](https://c.tenor.com/-qBsG1HwR4oAAAAC/tenor.gif)
